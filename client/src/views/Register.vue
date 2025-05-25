@@ -49,32 +49,57 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue'
-
-const email = ref('')
-const password = ref('')
-const confirmPassword = ref('')
-
-const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).{6,}$/
-
-const isPasswordValid = computed(() => passwordRegex.test(password.value))
-const doPasswordsMatch = computed(() => password.value === confirmPassword.value)
-
-const canSubmit = computed(() =>
-    email.value &&
-    isPasswordValid.value &&
-    doPasswordsMatch.value
-)
-
-function handleSubmit() {
-    if (!canSubmit.value) return
-    // Registration logic here
-    alert('Registration successful!')
-}
+import axios from 'axios';
 
 export default {
     name: 'Register',
-}
+    data() {
+        return {
+            email: '',
+            password: '',
+            confirmPassword: '',
+            loading: false,
+        };
+    },
+    computed: {
+        isPasswordValid() {
+            // At least 6 chars, at least one letter, one number, one symbol
+            return /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).{6,}$/.test(this.password);
+        },
+        canSubmit() {
+            return (
+                this.email &&
+                this.password &&
+                this.confirmPassword &&
+                this.isPasswordValid &&
+                this.password === this.confirmPassword &&
+                !this.loading
+            );
+        },
+    },
+    methods: {
+        async handleSubmit() {
+            if (!this.canSubmit) return;
+            this.loading = true;
+            try {
+                await this.$axios.post('/api/auth/register', {
+                    email: this.email,
+                    password: this.password,
+                });
+                // Optionally, redirect or show success message
+                this.$router.push('/login');
+            } catch (err) {
+                // Handle error (show message, etc.)
+                alert(
+                    err.response?.data?.message ||
+                    'Registration failed. Please try again.'
+                );
+            } finally {
+                this.loading = false;
+            }
+        },
+    },
+};
 </script>
 
 <style scoped>

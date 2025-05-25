@@ -31,17 +31,33 @@
 </template>
 
 <script>
-import { ref } from 'vue'
-
-const email = ref('')
-const password = ref('')
-
-function handleLogin() {
-    // Handle login logic here
-}
+import axios from 'axios'
 
 export default {
     name: 'Login',
+    data() {
+        return {
+            email: '',
+            password: '',
+        }
+    },
+    methods: {
+        handleLogin() {
+            this.$axios.post('/api/auth/login', {
+                email: this.email,
+                password: this.password,
+            }).then(response => {
+                if (response.data.success) {
+                    this.$router.push('/dashboard')
+                } else {
+                    alert('Login failed. Please check your credentials.')
+                }
+            }).catch(error => {
+                console.error('Login error:', error)
+                alert('An error occurred during login. Please try again.')
+            });
+        },
+    },
 }
 </script>
 
